@@ -10,6 +10,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.kevin.vension.uploadservice.MainActivity;
 import com.kevin.vension.uploadservice.MyApp;
@@ -38,7 +40,7 @@ public class UploadService extends Service {
 	private int mNumberUploaded = 0;
 	private Future<?> mCurrentUploadRunnable;
 	private EventBus bus = EventBus.getDefault();
-	private android.support.v4.app.NotificationCompat.Builder mNotificationBuilder;
+	private NotificationCompat.Builder mNotificationBuilder;
 	private NotificationManager mNotificationMgr;
 
 	private class UpdateRunnable extends PhotupThreadRunnable {
@@ -51,38 +53,35 @@ public class UploadService extends Service {
 
 		public void runImpl() {
 			try {
+				Log.e("图片上传","runImpl==》" + mController.getUploadsCount());
 				if (mSelection.getUploadState() == PhotoUpload.STATE_UPLOAD_WAITING) {
-					mSelection
-							.setUploadState(PhotoUpload.STATE_UPLOAD_IN_PROGRESS);
+					mSelection.setUploadState(PhotoUpload.STATE_UPLOAD_IN_PROGRESS);
 					// 暂停1秒 模拟上传
 					Thread.sleep(1000);
 					// TODO 在这里配置文件服务器地址和参数，需要上传的文件 使用公司文件服务器测试通过
-					RequestParams params = new RequestParams(
-							"https://www.baidu.com/");
+					RequestParams params = new RequestParams("https://www.baidu.com/");
 					params.addBodyParameter("f", new File("文件路径"));
 					x.http().post(params, new CommonCallback<String>() {
 
 						@Override
 						public void onSuccess(String result) {
-							mSelection
-									.setUploadState(PhotoUpload.STATE_UPLOAD_COMPLETED);
+							mSelection.setUploadState(PhotoUpload.STATE_UPLOAD_COMPLETED);
 						}
 
 						@Override
 						public void onError(Throwable ex, boolean isOnCallback) {
-							mSelection
-									.setUploadState(PhotoUpload.STATE_UPLOAD_ERROR);
+							mSelection.setUploadState(PhotoUpload.STATE_UPLOAD_ERROR);
 						}
 
 						@Override
 						public void onCancelled(CancelledException cex) {
-							mSelection
-									.setUploadState(PhotoUpload.STATE_UPLOAD_WAITING);
+							mSelection.setUploadState(PhotoUpload.STATE_UPLOAD_WAITING);
 						}
 
 						@Override
 						public void onFinished() {
 							// 通知service
+							Log.e("图片上传","onFinished==》" + mController.getUploadsCount());
 							bus.post(new UploadingPausedStateChangedEvent());
 						}
 
@@ -116,8 +115,7 @@ public class UploadService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		if (null == intent
-				|| "INTENT_SERVICE_UPLOAD_ALL".equals(intent.getAction())) {
+		if (null == intent || "INTENT_SERVICE_UPLOAD_ALL".equals(intent.getAction())) {
 			if (uploadAll()) {
 				return START_STICKY;
 			}
@@ -128,15 +126,13 @@ public class UploadService extends Service {
 	// 监听添加任务
 	public void onEventMainThread(UploadStateChangedEvent event) {
 		PhotoUpload upload = event.getUpload();
-
 		switch (upload.getUploadState()) {
 		case PhotoUpload.STATE_UPLOAD_IN_PROGRESS:
 			updateNotification(upload);
 			break;
-
 		case PhotoUpload.STATE_UPLOAD_COMPLETED:
 			mNumberUploaded++;
-
+			mController.removeUpload(upload);
 		case PhotoUpload.STATE_UPLOAD_ERROR:
 			startNextUploadOrFinish();
 
@@ -254,4 +250,5 @@ public class UploadService extends Service {
 		final NetworkInfo info = mgr.getActiveNetworkInfo();
 		return null != info && info.isConnectedOrConnecting();
 	}
+
 }

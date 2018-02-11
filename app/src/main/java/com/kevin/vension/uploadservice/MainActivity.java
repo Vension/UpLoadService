@@ -18,15 +18,20 @@ public class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+
+		addImage();
+
+	}
+
+	private void addImage() {
 		MyApp app = (MyApp) getApplication();
 		PhotoUploadController con = app.getPhotoUploadController();
-		//
 		for (int i = 0; i < 20; i++) {
 			PhotoUpload selection = new PhotoUpload();
 			selection.setName("图片" + i);
 			con.addUpload(selection);
-		}//
-
+		}
+		startService(MyApp.createExplicitFromImplicitIntent(this, new Intent("INTENT_SERVICE_UPLOAD_ALL")));
 	}
 
 
@@ -34,11 +39,9 @@ public class MainActivity extends AppCompatActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		boolean isPaused = prefs.getBoolean("isPaused", false);
-		menu.findItem(R.id.action_settings).setTitle(
-				isPaused ? "Resume" : "Pause");
+		menu.findItem(R.id.action_settings).setTitle(isPaused ? "Resume" : "Pause");
 		return true;
 	}
 
@@ -49,13 +52,11 @@ public class MainActivity extends AppCompatActivity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			SharedPreferences prefs = PreferenceManager
-					.getDefaultSharedPreferences(this);
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 			boolean isPaused = prefs.getBoolean("isPaused", false);
 			prefs.edit().putBoolean("isPaused", !isPaused).commit();
 			if (isPaused) {
-				startService(MyApp.createExplicitFromImplicitIntent(this,
-						new Intent("INTENT_SERVICE_UPLOAD_ALL")));
+				startService(MyApp.createExplicitFromImplicitIntent(this, new Intent("INTENT_SERVICE_UPLOAD_ALL")));
 			}
 			return true;
 		}

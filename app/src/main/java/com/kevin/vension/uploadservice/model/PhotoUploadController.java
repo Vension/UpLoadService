@@ -1,6 +1,7 @@
 package com.kevin.vension.uploadservice.model;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.kevin.vension.uploadservice.MyApp;
 import com.kevin.vension.uploadservice.events.UploadsModifiedEvent;
@@ -10,7 +11,9 @@ import java.util.List;
 
 import de.greenrobot.event.EventBus;
 
-/** 上传事件队列 */
+/**
+ * 上传事件队列
+ */
 public class PhotoUploadController {
 	public static PhotoUploadController getFromContext(Context context) {
 		return MyApp.getApplication(context).getPhotoUploadController();
@@ -102,16 +105,14 @@ public class PhotoUploadController {
 		synchronized (this) {
 			removed = mUploadingList.remove(selection);
 		}
-
+		Log.e("图片上传","removeUpload==》" + removed);
 		if (removed) {
 			selection.setUploadState(PhotoUpload.STATE_NONE);
-
 			postEvent(new UploadsModifiedEvent());
 		}
 	}
 
 	public void reset() {
-
 		synchronized (this) {
 			mSelectedPhotoList.clear();
 			mUploadingList.clear();
@@ -126,7 +127,7 @@ public class PhotoUploadController {
 	void populateFromDatabase() {
 
 		final List<PhotoUpload> uploadsFromDb = new ArrayList<>();// =
-																	// PhotoUploadDatabaseHelper.getUploads(mContext);
+		// PhotoUploadDatabaseHelper.getUploads(mContext);
 		if (null != uploadsFromDb) {
 			mUploadingList.addAll(uploadsFromDb);
 			// PhotoUpload.populateCache(uploadsFromDb);
