@@ -1,6 +1,12 @@
 # UpLoadService
 Android实现后台Service上传文件，通知栏提示上传进度
 
+# gif展示
+
+![image](https://github.com/Vension/UpLoadService/blob/master/gif/GIF.gif)
+
+##
+
 Created with the help of uploadService by [Vension](https://github.com/Vension)
 ```
 Copyright 2017 com.github.vension
